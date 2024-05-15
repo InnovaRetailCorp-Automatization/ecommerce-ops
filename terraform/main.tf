@@ -1,70 +1,70 @@
-provider "azurerm" {
-  features {}
-}
-
 ### -----------------------MAIN--------------------- ###
 # Creación del grupo de recursos
-resource "azurerm_resource_group" "rg" {
-  name     = "${var.prefix_name}-rg"
+
+module "resource_group" {
+  source = "./modules/resource_group"
+  name = "${var.prefix_name}-rg"
   location = var.region
 }
 
 ### -----------------------NETWORK--------------------- ###
 # Creación de la red virtual
-resource "azurerm_virtual_network" "vn" {
-  name                = "${var.prefix_name}-network"
-  address_space       = ["10.0.0.0/16"]
-  location            = var.region
-  resource_group_name = azurerm_resource_group.rg.name
+module "virtual_network" {
+  source = "./modules/virtual_network"
+  name = "${var.prefix_name}-vnet"
+  address_space = ["10.0.0.0/16"]
+  location = var.region
+  resource_group_name = module.resource_group.resource_group_name
 }
 
 # Creación de la subred para el application-gateway
-resource "azurerm_subnet" "appgw_subnet" {
-  name                 = "${var.prefix_name}-appgw-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vn.name
-  address_prefixes     = ["10.0.0.0/24"]
+module "appgw_subnet" {
+  source = "./modules/subnet"
+  name = "${var.prefix_name}-sn-appgw"
+  resource_group_name = module.resource_group.resource_group_name
+  virtual_network_name = module.virtual_network.name
+  address_prefixes = ["10.0.0.0/24"]
 }
 
-# Creación de una subnet para nodos y pods
-resource "azurerm_subnet" "aks_subnet" {
-  name                 = "${var.prefix_name}-aks-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vn.name
-  address_prefixes     = ["10.0.1.0/24"] # Cambiado para evitar conflicto con el CIDR de la subred existente
+# Creación de una subnet para el cluster aks
+module "aks_subnet" {
+  source = "./modules/subnet"
+  name = "${var.prefix_name}-sn-aks"
+  resource_group_name = module.resource_group.resource_group_name
+  virtual_network_name = module.virtual_network.name
+  address_prefixes = ["10.0.2.0/24"]
+}
+
+#Ip Pública del api-gateway
+module "ip_appgw" {
+  source = "./modules/public_ip"
+  name = "${var.prefix_name}-ip-appgw"
+  location = var.region
+  allocation_method = "Static"
+  sku = "Basic"
+}
+#Ip Pública del bastion
+
+module "ip_bastion" {
+  source = "./modules/bastion"
+  name = "${var.prefix_name}-ip-bastion"
+  location = var.region
+  allocation_method = "Static"
+  sku = "Basic"
 }
 
 ### -----------------------SECURITY--------------------- ###
 
+
+
 ### -----------------------CONTAINER REGISTRY--------------------- ###
-resource "azurerm_container_registry" "cr" {
-  name                = "${var.prefix_name}containerReg" # Cambiado para coincidir con el prefijo
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = var.region
-  sku                 = "Basic"
-  admin_enabled       = true
-}
+# Lllamado al modulo para la creación del container registry
+
 
 ### -----------------------COMPUTE--------------------- ###
 
-# Creación del clúster de AKS
-resource "azurerm_kubernetes_cluster" "kc" {
-  name                             = "${var.prefix_name}-aks"
-  location                         = azurerm_resource_group.rg.location
-  resource_group_name              = azurerm_resource_group.rg.name
-  dns_prefix                       = "${var.prefix_name}-aks"
-  default_node_pool {
-    name                = "default"
-    node_count          = 1
-    vm_size             = "Standard_D2_v2"
-    enable_auto_scaling = true
-    max_count           = 3
-    min_count           = 1
-  }
-  identity {
-    type = "SystemAssigned"
-  }
-}
+# Lllamado al modulo para la creación del clúster de AKS
+
 
 
 
