@@ -35,7 +35,7 @@ module "aks_subnet" {
   address_prefixes = ["10.0.2.0/24"]
 }
 
-#Ip Pública del api-gateway
+#Llamado al modulo de la Ip Pública del api-gateway
 module "ip_appgw" {
   source = "./modules/public_ip"
   name = "${var.prefix_name}-ip-appgw"
@@ -43,7 +43,7 @@ module "ip_appgw" {
   allocation_method = "Static"
   sku = "Basic"
 }
-#Ip Pública del bastion
+#Llamado al modulo de la Ip Pública del bastion
 module "ip_bastion" {
   source = "./modules/bastion"
   name = "${var.prefix_name}-ip-bastion"

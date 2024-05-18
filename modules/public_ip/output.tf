@@ -1,4 +1,4 @@
-output "name" {
-  description = "The name of the resource"
-  value =azurerm_resour
+output "id" {
+  description = "The id of the resource"
+  value = azurerm_public_ip.publicIp.id
 }
