@@ -84,8 +84,8 @@ module "peeringClusterToAppgw" {
 
 module "container_registry" {
   source                  = "./modules/container_registry"
-  container_name          = "${var.prefix_name}-cr"
-  resource_group_name     = module.resource_group.resource_group_name
+  container_name          = "${var.prefix_name}cr"
+  resource_group_name     = module.resource_group.name
   location = module.resource_group.location
   sku           = "Standard"
   admin_enabled = true
