@@ -54,6 +54,27 @@ module "ip_bastion" {
   sku = "Basic"
 }
 
+# Emparejamiento/Conexión desde Application Gateway hacia Cluster AKS 
+module "peeringAppgwToCluster" {
+  source ="./modules/network_peering"
+  name = "${var.prefix_name}-peer-appgw-cluster"
+  resource_group_name=module.resource_group.name
+  virtual_network_name=module.appgw_subnet.name
+  remote_virtual_network_id=module.aks_subnet.id
+  allow_virtual_network_access=true
+  
+}
+
+# Emparejamiento/Conexión desde Cluster AKS hacia Application Gateway
+module "peeringClusterToAppgw" {
+  source ="./modules/network_peering"
+  name = "${var.prefix_name}-peer-cluster-appgw"
+  resource_group_name=module.resource_group.name
+  virtual_network_name=module.appgw_subnet.name
+  remote_virtual_network_id=module.aks_subnet.id
+  allow_virtual_network_access=true
+}
+
 ### -----------------------SECURITY--------------------- ###
 
 
