@@ -5,21 +5,24 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   dns_prefix          = var.dns_prefix
 
   default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "Standard_D2_v2"
+    name       = var.node_pool_name
+    node_count = var.node_count
+    vm_size    = var.vm_size
+    os_disk_size_gb = var.os_disk_size_gb
+    vnet_subnet_id = var.subnet_id
   }
-
+  
+  network_profile {
+   network_plugin= var.network_plugin 
+  }
   identity {
-    type = "SystemAssigned"
+    type = var.identity_type
   }
 
  key_vault_secrets_provider {
     # update the secrets on a regular basis
-    secret_rotation_enabled = true
+    secret_rotation_enabled = var.secret_rotation_enabled
   }
-
-  private_cluster_enabled = true
 }
 
 # Generacion del archivo kubeconfig para poder linkear kubectl de forma local con el cluster en la nube
