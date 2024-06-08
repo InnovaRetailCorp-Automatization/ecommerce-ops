@@ -165,7 +165,7 @@ spec:
                   name: azure-keyvault-secrets
                   key: CLOUDINARY-PRESET-NAME
             - name: FRONTEND_STORE_URL
-              value: "http://48.216.144.157:3001"
+              value: "http://ecommerce-store:3001"
             - name: STRIPE_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -202,7 +202,7 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
-  type: LoadBalancer
+  type: ClusterIP
 
 
 ---
@@ -230,7 +230,7 @@ spec:
             - containerPort: 3001
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: "http://48.216.144.72:3000/api/cec6cf95-abd3-419e-a223-5c85cbbb0370"
+              value: "http://ecommerce-admin:3000/api/cec6cf95-abd3-419e-a223-5c85cbbb0370"
             - name: REACT_EDITOR
               valueFrom:
                 secretKeyRef:
@@ -267,4 +267,4 @@ spec:
     - name: http
       port: 3001
       targetPort: 3001
-  type: LoadBalancer
+  type: ClusterIP
