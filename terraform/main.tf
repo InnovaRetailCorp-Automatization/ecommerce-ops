@@ -36,15 +36,6 @@ module "appgw_subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Creación de la subred para el bastion
-module "AzureBastionSubnet" {
-  source               = "./modules/subnet"
-  name                 = "AzureBastionSubnet"
-  resource_group_name  = module.resource_group.name
-  virtual_network_name = module.virtual_network_aks.name
-  address_prefixes     = ["10.1.1.0/24"]
-}
-
 # Creación de una subnet para el cluster aks
 module "aks_subnet" {
   source               = "./modules/subnet"
@@ -58,16 +49,6 @@ module "aks_subnet" {
 module "ip_appgw" {
   source              = "./modules/public_ip"
   name                = "${var.prefix_name}-ip-appgw"
-  location            = var.region
-  resource_group_name = module.resource_group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-#Llamado al modulo de la Ip Pública del bastion
-module "ip_bastion" {
-  source              = "./modules/public_ip"
-  name                = "${var.prefix_name}-ip-bastion"
   location            = var.region
   resource_group_name = module.resource_group.name
   allocation_method   = "Static"
@@ -214,6 +195,111 @@ module "key_vault_secret_webserver_properties" {
   key_vault_id = module.key_vault.key_vault_id
 }
 
+module "key_vault_secret_next_public_clerk_publishable_key" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLERK-PUBLISHABLE-KEY"
+  value        = "pk_test_ZGlyZWN0LXByaW1hdGUtOS5jbGVyay5hY2NvdW50cy5kZXYk"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_clerk_secret_key" {
+  source       = "./modules/key_vault_secret"
+  name         = "CLERK-SECRET-KEY"
+  value        = "sk_test_WebkU17WzKULXRFNRJu1GtTPg53ppp2klORhDWrHGa"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_clerk_sign_in_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLERK-SIGN-IN-URL"
+  value        = "/sign-in"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_clerk_sign_up_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLERK-SIGN-UP-URL"
+  value        = "/sign-up"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_clerk_after_sign_in_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLERK-AFTER-SIGN-IN-URL"
+  value        = "/"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_clerk_after_sign_up_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLERK-AFTER-SIGN-UP-URL"
+  value        = "/"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_database_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "DATABASE-URL"
+  value        = "mysql://admin:Pass123.@mysql:3306/ecommerce_db"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_cloudinary_cloud_name" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-CLOUDINARY-CLOUD-NAME"
+  value        = "dat9omhgf"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_stripe_api_key" {
+  source       = "./modules/key_vault_secret"
+  name         = "STRIPE-API-KEY"
+  value        = "sk_test_51POmsOHDtVBmcKUIIFRQ2C65AqO0TL4DdPjvU7Nd8Jv73UeFFQnjvyO1qfPxfulf3ofbPC4YDu8onwOdFgVCqV8g008VqhB01X"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_frontend_store_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "FRONTEND-STORE-URL"
+  value        = "http://48.217.211.186:3001"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_stripe_webhook_secret" {
+  source       = "./modules/key_vault_secret"
+  name         = "STRIPE-WEBHOOK-SECRET"
+  value        = "whsec_5188f9ac9e8498dffae7934584e531ad8bd4d28a1915a28351a0400a8ecfcf8f"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_next_public_api_url" {
+  source       = "./modules/key_vault_secret"
+  name         = "NEXT-PUBLIC-API-URL"
+  value        = "http://48.217.211.112:3000/api/cec6cf95-abd3-419e-a223-5c85cbbb0370"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_react_editor" {
+  source       = "./modules/key_vault_secret"
+  name         = "REACT-EDITOR"
+  value        = "atom"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_billboard_id" {
+  source       = "./modules/key_vault_secret"
+  name         = "BILLBOARD-ID"
+  value        = "b321e067-b8d0-435d-bd31-9768581c1733"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
+module "key_vault_secret_cloudinary_preset_name" {
+  source       = "./modules/key_vault_secret"
+  name         = "CLOUDINARY-PRESET-NAME"
+  value        = "e2wxzg4y"
+  key_vault_id = module.key_vault.key_vault_id
+}
+
 
 
 module "identity" {
@@ -222,17 +308,6 @@ module "identity" {
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
 
-}
-
-# Llamado al modulo de bastion para crear el bastion host
-module "bastion" {
-  source                = "./modules/bastion"
-  name                  = "${var.prefix_name}-bastion"
-  location              = module.resource_group.location
-  resource_group_name   = module.resource_group.name
-  ip_configuration_name = "${var.prefix_name}-config-ip-bastion"
-  subnet_id             = module.AzureBastionSubnet.id
-  public_ip_address_id  = module.ip_bastion.id
 }
 
 ### -----------------------CONTAINER REGISTRY--------------------- ###
@@ -255,7 +330,7 @@ module "aks_cluster" {
   resource_group_name     = module.resource_group.name
   dns_prefix              = "${var.prefix_name}-aks"
   node_pool_name          = "${var.prefix_name}pool"
-  node_count              = 1
+  node_count              = 2
   vm_size                 = "Standard_DS2_v2"
   os_disk_size_gb         = 40
   subnet_id               = module.aks_subnet.id
@@ -263,28 +338,4 @@ module "aks_cluster" {
   identity_type           = "SystemAssigned"
   secret_rotation_enabled = true
   local_file              = "KubeConfig"
-}
-
-
-### -----------------------SCRIPTING--------------------- ###
-
-resource "null_resource" "execute_script" {
-  depends_on = [
-    module.application_gateway,
-    module.key_vault,
-    module.aks_cluster,
-    module.role_key_vault_access,
-    module.role_aks_cluster,
-    module.container_registry,
-    module.bastion,
-    module.resource_group,
-    module.access_policy_aks_cluster,
-    module.access_policy_identity,
-    module.access_policy_current_user,
-    module.key_vault_secret_webserver-config,
-    module.key_vault_secret_webserver_properties
-  ]
-  provisioner "local-exec" {
-    command = "chmod +x script.sh && ./script.sh"
-  }
 }
