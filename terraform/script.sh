@@ -9,6 +9,12 @@ applicationGatewayName=$(terraform output -raw application_gateway_name)
 # Obtener el nombre del cluster
 clusterName=$(terraform output -raw cluster_name)
 
+#Obtener el nombre del container registry
+cr_name=$(terraform output -raw cr_name)
+
+#Obtener el client_id del identity
+client_id=$(terraform output -raw identity_client_id)
+
 # Ejecutar el comando de Azure CLI con los valores obtenidos
 appgwId=$(az network application-gateway list -g $resourceGroupName --query "[?name=='$applicationGatewayName'].id" -o tsv)
 
@@ -20,9 +26,12 @@ az aks enable-addons -n $clusterName -g $resourceGroupName -a ingress-appgw --ap
 # Activa el managed identity
 az aks update -g $resourceGroupName -n $clusterName --enable-managed-identity
 
+az acr login --name $cr_name 
+
 # Imprimir los valores de las variables
 echo "Resource Group Name: $resourceGroupName"
 echo "Application Gateway Name: $applicationGatewayName"
 echo "Cluster Name: $clusterName"
 echo "Application Gateway ID: $appgwId"
+echo "identity client_id: $client_id"
 echo $AKS_OIDC_ISSUER
