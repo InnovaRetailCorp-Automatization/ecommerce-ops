@@ -257,18 +257,26 @@ module "aks_cluster" {
   local_file              = "KubeConfig"
 }
 
-output "resource_group_name" {
-  value = module.resource_group.name
-}
+resource "null_resource" "execute_script" {
+  depends_on = [
+    module.application_gateway,
+    module.key_vault,
+    module.aks_cluster,
+    module.role_key_vault_access,
+    module.role_aks_cluster,
+    module.container_registry,
+    module.resource_group,
+    module.access_policy_aks_cluster,
+    module.access_policy_identity,
+    module.access_policy_current_user,
+    module.key_vault_secret_webserver-config,
+    module.key_vault_secret_webserver_properties
+  ]
+  triggers = {
+    always_run = "${timestamp()}"
+  }
 
-output "cluster_name" {
-  value = module.aks_cluster.name
-}
-
-output "cr_name" {
-  value = module.container_registry.name
-}
-
-output "identity_client_id" {
-  value = module.identity.client_id
+  provisioner "local-exec" {
+    command = "chmod +x script.sh && ./script.sh"
+  }
 }
