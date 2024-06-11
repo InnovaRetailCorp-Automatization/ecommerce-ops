@@ -9,15 +9,6 @@ module "resource_group" {
 data "azurerm_client_config" "current" {}
 
 ### -----------------------NETWORK--------------------- ###
-# Creación de la red virtual del application gateway
-module "virtual_network_appigw" {
-  source              = "./modules/virtual_network"
-  name                = "${var.prefix_name}-vn-appigw"
-  address_space       = ["10.0.0.0/16"]
-  location            = var.region
-  resource_group_name = module.resource_group.name
-}
-
 # Creación de la red virtual del aks
 module "virtual_network_aks" {
   source              = "./modules/virtual_network"
@@ -26,16 +17,6 @@ module "virtual_network_aks" {
   location            = var.region
   resource_group_name = module.resource_group.name
 }
-
-# Creación de la subred para el application-gateway
-module "appgw_subnet" {
-  source               = "./modules/subnet"
-  name                 = "${var.prefix_name}-sn-appgw"
-  resource_group_name  = module.resource_group.name
-  virtual_network_name = module.virtual_network_appigw.name
-  address_prefixes     = ["10.0.1.0/24"]
-}
-
 # Creación de una subnet para el cluster aks
 module "aks_subnet" {
   source               = "./modules/subnet"
@@ -45,71 +26,7 @@ module "aks_subnet" {
   address_prefixes     = ["10.1.2.0/24"]
 }
 
-#Llamado al modulo de la Ip Pública del api-gateway
-module "ip_appgw" {
-  source              = "./modules/public_ip"
-  name                = "${var.prefix_name}-ip-appgw"
-  location            = var.region
-  resource_group_name = module.resource_group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-# Emparejamiento/Conexión desde Application Gateway hacia Cluster AKS 
-module "peeringAppgwToCluster" {
-  source                       = "./modules/network_peering"
-  name                         = "${var.prefix_name}-peer-appgw-cluster"
-  resource_group_name          = module.resource_group.name
-  virtual_network_name         = module.virtual_network_appigw.name
-  remote_virtual_network_id    = module.virtual_network_aks.id
-  allow_virtual_network_access = true
-
-}
-
-# Emparejamiento/Conexión desde Cluster AKS hacia Application Gateway
-module "peeringClusterToAppgw" {
-  source                       = "./modules/network_peering"
-  name                         = "${var.prefix_name}-peer-cluster-appgw"
-  resource_group_name          = module.resource_group.name
-  virtual_network_name         = module.virtual_network_aks.name
-  remote_virtual_network_id    = module.virtual_network_appigw.id
-  allow_virtual_network_access = true
-}
-
 ### -----------------------SECURITY--------------------- ###
-#Llamado al módulo de appigateway
-module "application_gateway" {
-  source                                          = "./modules/application_gateway"
-  name                                            = "${var.prefix_name}AppiGW"
-  resource_group_name                             = module.resource_group.name
-  location                                        = module.resource_group.location
-  sku_name                                        = "Standard_v2"
-  sku_tier                                        = "Standard_v2"
-  sku_capacity                                    = 2
-  gateway_ip_configuration_name                   = "appgwIpConfig"
-  subnet_id                                       = module.appgw_subnet.id
-  frontend_ip_configuration_name                  = "${module.appgw_subnet.name}-front-ipconfig"
-  public_ip_address_id                            = module.ip_appgw.id
-  frontend_port_name                              = "${module.appgw_subnet.name}-front-http-port"
-  frontend_port_port                              = 80
-  backend_address_pool_name                       = "${module.appgw_subnet.name}-backend-pool"
-  backend_http_settings_name                      = "${module.appgw_subnet.name}-backend-http-setting"
-  cookie_based_affinity                           = "Disabled"
-  backend_http_settings_port                      = 80
-  backend_http_settings_protocol                  = "Http"
-  backend_http_settings_request_timeout           = 60
-  http_listener_name                              = "${module.appgw_subnet.name}-http-listener"
-  http_listener_frontend_ip_configuration_name    = "${module.appgw_subnet.name}-front-ipconfig"
-  http_listener_frontend_port_name                = "${module.appgw_subnet.name}-front-http-port"
-  http_listener_protocol                          = "Http"
-  request_routing_rule_name                       = "${module.appgw_subnet.name}-request-routing-rule"
-  request_routing_rule_rule_type                  = "Basic"
-  request_routing_rule_priority                   = 9
-  request_routing_rule_http_listener_name         = "${module.appgw_subnet.name}-http-listener"
-  request_routing_rule_backend_address_pool_name  = "${module.appgw_subnet.name}-backend-pool"
-  request_routing_rule_backend_http_settings_name = "${module.appgw_subnet.name}-backend-http-setting"
-}
-
 # Llamado al modulo de key vault
 module "key_vault" {
   source                      = "./modules/key_vault"
@@ -344,10 +261,6 @@ output "resource_group_name" {
   value = module.resource_group.name
 }
 
-output "application_gateway_name" {
-  value = module.application_gateway.application_gateway_name
-}
-
 output "cluster_name" {
   value = module.aks_cluster.name
 }
@@ -358,28 +271,4 @@ output "cr_name" {
 
 output "identity_client_id" {
   value = module.identity.client_id
-}
-
-resource "null_resource" "execute_script" {
-  depends_on = [
-    module.application_gateway,
-    module.key_vault,
-    module.aks_cluster,
-    module.role_key_vault_access,
-    module.role_aks_cluster,
-    module.container_registry,
-    module.resource_group,
-    module.access_policy_aks_cluster,
-    module.access_policy_identity,
-    module.access_policy_current_user,
-    module.key_vault_secret_webserver-config,
-    module.key_vault_secret_webserver_properties
-  ]
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  provisioner "local-exec" {
-    command = "chmod +x script.sh && ./script.sh"
-  }
 }

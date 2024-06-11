@@ -13,7 +13,7 @@ spec:
   parameters:
     usePodIdentity: "false"
     useVMManagedIdentity: "true"
-    userAssignedIdentityID: "60347d50-ad45-442f-9779-cf0700ef08d8"
+    userAssignedIdentityID: "379b2bfd-55dc-4ce4-ab82-b4f9caec3d6f"
     keyvaultName: "innovaKeyVault"
     objects: |
       array:
